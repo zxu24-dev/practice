@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adventure</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #E3DBD3; }
+  body { display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  svg { height: 100vh; max-width: 100vw; display: block; user-select: none; -webkit-user-select: none; }
+
+  /* Equipment: hidden at start, toggled by the buttons */
+  #shield, #tie, #helmet { transition: opacity .35s ease; }
+  .hidden { opacity: 0; }
+
+  /* Buttons */
+  #shield-button, #tie-button, #helmet-button {
+    cursor: pointer;
+    transition: filter .2s ease, opacity .8s ease;
+  }
+  #shield-button:hover, #tie-button:hover, #helmet-button:hover {
+    filter: drop-shadow(0 0 6px #FFE24A) drop-shadow(0 0 14px #FFD700);
+  }
+  .faded { opacity: 0; pointer-events: none; }
+
+  /* Door */
+  #door {
+    transform-box: fill-box;
+    transition: transform 1.6s cubic-bezier(.55, 0, .25, 1), filter .6s ease;
+  }
+  #door.ready { cursor: pointer; animation: door-glow 1.4s ease-in-out infinite alternate; }
+  #door.open { transform: translateY(-90%); pointer-events: none; }
+  @keyframes door-glow {
+    from { filter: brightness(1.15); }
+    to   { filter: brightness(1.6); }
+  }
+  /* Glowing outline drawn above the castle wall so the glow shows around the arch */
+  #door-glow { fill: none; stroke: #FFD84D; stroke-width: 6; pointer-events: none; opacity: 0; transition: opacity .6s ease; }
+  #door-glow.on { animation: outline-pulse 1.4s ease-in-out infinite alternate; }
+  @keyframes outline-pulse {
+    from { opacity: .35; }
+    to   { opacity: .95; }
+  }
+
+  /* Hall */
+  #hall.pulse { animation: hall-pulse 3.5s ease-in-out infinite; }
+  @keyframes hall-pulse {
+    0%, 100% { filter: drop-shadow(0 0 0 rgba(255, 216, 77, 0)); }
+    50%      { filter: drop-shadow(0 0 7px rgba(255, 216, 77, .65)); }
+  }
+
+  /* Hero */
+  #hero-drag { touch-action: none; transform-box: view-box; }
+  #hero-drag.draggable { cursor: grab; }
+  #hero-drag.dragging { cursor: grabbing; }
+  #hero-drag.enter {
+    transition: transform 1.4s ease-in-out, opacity 1.4s ease-in;
+    opacity: 0;
+    pointer-events: none;
+  }
+  #hero.bob { animation: bob 1.6s ease-in-out infinite; }
+  @keyframes bob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-6px); }
+  }
+</style>
+</head>
+<body>
+<svg width="375" height="812" viewBox="0 0 375 812" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="adventure">
+<rect width="375" height="812" fill="#E3DBD3"/>
+<g id="Castle">
+<rect id="Rectangle 15" x="53" y="117" width="273" height="261" fill="#76A4BA"/>
+<path id="Rectangle 27" d="M176 241C176 210.072 201.072 185 232 185V185C262.928 185 288 210.072 288 241V378H176V241Z" fill="#4F7181"/>
+<path id="Rectangle 28" d="M78 218.5C78 199.998 92.9985 185 111.5 185V185C130.002 185 145 199.998 145 218.5V310H78V218.5Z" fill="#4F7181"/>
+<path id="Rectangle 29" d="M90 222C90 208.193 101.193 197 115 197V197C128.807 197 140 208.193 140 222V304H90V222Z" fill="#4C4C4C"/>
+<path id="hall" d="M188 256C188 231.699 207.699 212 232 212V212C256.301 212 276 231.699 276 256V378H188V256Z" fill="#4C4C4C"/>
+<g id="door">
+<path id="Rectangle 31" d="M176 241C176 210.072 201.072 185 232 185V185C262.928 185 288 210.072 288 241V378H176V241Z" fill="#693F35"/>
+<path id="Union" d="M217 234H247V202H254V234H276V241H254V253H276V260H254V271H276V278H254V290H276V297H254V308H276V315H254V327H276V334H254V345H276V352H254V363H276V370H254V378H247V370H217V378H210V370H188V363H210V352H188V345H210V334H188V327H210V315H188V308H210V297H188V290H210V278H188V271H210V260H188V253H210V241H188V234H210V202H217V234ZM217 352V363H247V352H217ZM217 334V345H247V334H217ZM217 315V327H247V315H217ZM217 297V308H247V297H217ZM217 278V290H247V278H217ZM217 260V271H247V260H217ZM217 241V253H247V241H217Z" fill="#FFBB56" fill-opacity="0.22"/>
+</g>
+<path id="Subtract" d="M326 378H288V241C288 210.072 262.928 185 232 185C201.072 185 176 210.072 176 241V378H161V117H326V378Z" fill="#76A4BA"/>
+<g id="Group 7">
+<rect id="Rectangle 41" x="25" width="329" height="93" fill="#E3DBD3"/>
+<rect id="Rectangle 16" x="25" y="64" width="329" height="68" fill="#76A4BA"/>
+<rect id="Rectangle 18" x="25" y="30" width="50.4" height="68" fill="#76A4BA"/>
+<rect id="Rectangle 19" x="303.6" y="30" width="50.4" height="68" fill="#76A4BA"/>
+<rect id="Rectangle 20" x="94.9999" y="30" width="50.4" height="68" fill="#76A4BA"/>
+<rect id="Rectangle 21" x="165" y="30" width="50.4" height="68" fill="#76A4BA"/>
+<rect id="Rectangle 22" x="235" y="30" width="50.4" height="68" fill="#76A4BA"/>
+<rect id="Rectangle 17" x="25" y="117" width="329" height="15" fill="black" fill-opacity="0.23"/>
+</g>
+</g>
+<g id="hero">
+<path id="body" d="M237 516C262.957 516 284 537.043 284 563C284 576.373 278.414 588.441 269.449 597H297V697H272V622H265V763H240V663H233V763H208V622H201V697H176V597H204.551C195.586 588.441 190 576.373 190 563C190 537.043 211.043 516 237 516Z" fill="#A359A2"/>
+<g id="tie">
+<path id="Ellipse 2" d="M247.367 611C247.367 617.72 241.919 623.167 235.2 623.167C228.481 623.167 223.033 617.72 223.033 611C223.033 604.281 228.481 598.833 235.2 598.833C241.919 598.833 247.367 604.281 247.367 611Z" fill="#FFB5E6" stroke="white"/>
+<g id="Polygon 1">
+<path d="M235.2 611L195.3 627.454L195.3 594.546L235.2 611Z" fill="#FFB5E6"/>
+<mask id="stroke0_1_2" fill="white">
+<path d="M235.2 611L195.3 627.454L195.3 594.546L235.2 611Z"/>
+</mask>
+<path d="M235.2 611L195.3 627.454L195.3 594.546L235.2 611Z" stroke-width="2" stroke="white" mask="url(#stroke0_1_2)"/>
+</g>
+<g id="Polygon 4">
+<path d="M235.2 611L195.45 620.526L195.45 601.474L235.2 611Z" fill="#FFB5E6"/>
+<mask id="stroke1_1_2" fill="white">
+<path d="M235.2 611L195.45 620.526L195.45 601.474L235.2 611Z"/>
+</mask>
+<path d="M235.2 611L195.45 620.526L195.45 601.474L235.2 611Z" stroke-width="2" stroke="white" mask="url(#stroke1_1_2)"/>
+</g>
+<g id="Polygon 2">
+<path d="M235.2 611L275.1 594.546L275.1 627.454L235.2 611Z" fill="#FFB5E6"/>
+<mask id="stroke2_1_2" fill="white">
+<path d="M235.2 611L275.1 594.546L275.1 627.454L235.2 611Z"/>
+</mask>
+<path d="M235.2 611L275.1 594.546L275.1 627.454L235.2 611Z" stroke-width="2" stroke="white" mask="url(#stroke2_1_2)"/>
+</g>
+<g id="Polygon 3">
+<path d="M235.2 611L274.95 603.206L274.95 618.794L235.2 611Z" fill="#FFB5E6"/>
+<mask id="stroke3_1_2" fill="white">
+<path d="M235.2 611L274.95 603.206L274.95 618.794L235.2 611Z"/>
+</mask>
+<path d="M235.2 611L274.95 603.206L274.95 618.794L235.2 611Z" stroke-width="2" stroke="white" mask="url(#stroke3_1_2)"/>
+</g>
+<path id="Ellipse 3" d="M243.7 611C243.7 615.694 239.894 619.5 235.2 619.5C230.506 619.5 226.7 615.694 226.7 611C226.7 606.306 230.506 602.5 235.2 602.5C239.894 602.5 243.7 606.306 243.7 611Z" fill="#FFB5E6" stroke="white"/>
+</g>
+<g id="shield">
+<path id="Ellipse 3_2" d="M232 682C232 707.957 210.957 729 185 729C159.043 729 138 707.957 138 682C138 656.043 159.043 635 185 635C210.957 635 232 656.043 232 682Z" fill="white" stroke-width="4" stroke="#BB5353"/>
+<g id="Ellipse 4">
+<circle cx="185" cy="682" r="24.1343" fill="white"/>
+<circle cx="185" cy="682" r="24.1343" fill="#BB5353"/>
+</g>
+<g id="Ellipse 5">
+<circle cx="185" cy="682" r="13.8955" fill="white"/>
+<circle cx="185" cy="682" r="13.8955" fill="white"/>
+</g>
+<g id="Ellipse 6">
+<circle cx="185" cy="682" r="8.04478" fill="white"/>
+<circle cx="185" cy="682" r="8.04478" fill="#BB5353"/>
+</g>
+</g>
+<g id="helmet">
+<g id="Union_2">
+<use xlink:href="#stroke4_1_2" fill="#B5B5B5"/>
+<mask id="stroke5_1_2" fill="white">
+<use xlink:href="#stroke4_1_2"/>
+</mask>
+<path d="M236.499 499.001C261.17 505.138 280.854 524.993 287.997 550.559H242.999V579.999H228.999V550.559H185C192.143 524.993 211.827 505.138 236.499 499.001Z" stroke-width="2" stroke="#F1F1F1" mask="url(#stroke5_1_2)"/>
+</g>
+<g id="Group 6">
+<g id="Union_3">
+<use xlink:href="#stroke6_1_2" fill="#B5B5B5"/>
+<mask id="stroke7_1_2" fill="white">
+<use xlink:href="#stroke6_1_2"/>
+</mask>
+<path d="M236.499 499.001C255.422 505.138 270.516 524.993 275.995 550.559H241.484V579.999H230.747V550.559H197.002C202.481 524.993 217.576 505.138 236.499 499.001Z" stroke-width="2" stroke="#D8D8D8" mask="url(#stroke7_1_2)"/>
+</g>
+</g>
+</g>
+</g>
+<g id="tie-button">
+<circle id="Ellipse 11" cx="65" cy="737" r="40" fill="black" fill-opacity="0.47"/>
+<circle id="Ellipse 12" cx="65" cy="732" r="40" fill="#FFBB56"/>
+<g id="figure" opacity="0.7">
+<path id="Ellipse 2_2" d="M74.2714 734C74.2714 739.01 70.21 743.071 65.2 743.071C60.19 743.071 56.1286 739.01 56.1286 734C56.1286 728.99 60.19 724.929 65.2 724.929C70.21 724.929 74.2714 728.99 74.2714 734Z" fill="#FFB5E6" stroke="white"/>
+<g id="Polygon 1_2">
+<path d="M65.2 734L35.05 746.434L35.05 721.566L65.2 734Z" fill="#FFB5E6"/>
+<mask id="stroke8_1_2" fill="white">
+<path d="M65.2 734L35.05 746.434L35.05 721.566L65.2 734Z"/>
+</mask>
+<path d="M65.2 734L35.05 746.434L35.05 721.566L65.2 734Z" stroke-width="2" stroke="white" mask="url(#stroke8_1_2)"/>
+</g>
+<g id="Polygon 4_2">
+<path d="M65.2 734L35.1633 741.198L35.1633 726.802L65.2 734Z" fill="#FFB5E6"/>
+<mask id="stroke9_1_2" fill="white">
+<path d="M65.2 734L35.1633 741.198L35.1633 726.802L65.2 734Z"/>
+</mask>
+<path d="M65.2 734L35.1633 741.198L35.1633 726.802L65.2 734Z" stroke-width="2" stroke="white" mask="url(#stroke9_1_2)"/>
+</g>
+<g id="Polygon 2_2">
+<path d="M65.2 734L95.35 721.566L95.35 746.434L65.2 734Z" fill="#FFB5E6"/>
+<mask id="stroke10_1_2" fill="white">
+<path d="M65.2 734L95.35 721.566L95.35 746.434L65.2 734Z"/>
+</mask>
+<path d="M65.2 734L95.35 721.566L95.35 746.434L65.2 734Z" stroke-width="2" stroke="white" mask="url(#stroke10_1_2)"/>
+</g>
+<g id="Polygon 3_2">
+<path d="M65.2 734L95.2367 728.11L95.2367 739.89L65.2 734Z" fill="#FFB5E6"/>
+<mask id="stroke11_1_2" fill="white">
+<path d="M65.2 734L95.2367 728.11L95.2367 739.89L65.2 734Z"/>
+</mask>
+<path d="M65.2 734L95.2367 728.11L95.2367 739.89L65.2 734Z" stroke-width="2" stroke="white" mask="url(#stroke11_1_2)"/>
+</g>
+<path id="Ellipse 3_3" d="M71.5008 734C71.5008 737.48 68.6798 740.301 65.2 740.301C61.7202 740.301 58.8993 737.48 58.8993 734C58.8993 730.52 61.7202 727.699 65.2 727.699C68.6798 727.699 71.5008 730.52 71.5008 734Z" fill="#FFB5E6" stroke="white"/>
+</g>
+<circle id="Ellipse 13" cx="65" cy="732" r="36" fill="url(#paint0_linear_1_2)"/>
+</g>
+<g id="helmet-button">
+<circle id="Ellipse 11_2" cx="65" cy="511" r="40" fill="black" fill-opacity="0.47"/>
+<circle id="Ellipse 12_2" cx="65" cy="506" r="40" fill="#FFBB56"/>
+<g id="figure_2" opacity="0.75">
+<g id="Union_4">
+<use xlink:href="#stroke12_1_2" fill="#B5B5B5"/>
+<mask id="stroke13_1_2" fill="white">
+<use xlink:href="#stroke12_1_2"/>
+</mask>
+<path d="M65.4993 481.001C78.5966 484.259 89.0452 494.799 92.8372 508.371H68.9505V524H61.5189V508.371H38.1634C41.9555 494.8 52.4026 484.259 65.4993 481.001Z" stroke-width="2" stroke="#F1F1F1" mask="url(#stroke13_1_2)"/>
+</g>
+<g id="Group 6_2">
+<g id="Union_5">
+<use xlink:href="#stroke14_1_2" fill="#B5B5B5"/>
+<mask id="stroke15_1_2" fill="white">
+<use xlink:href="#stroke14_1_2"/>
+</mask>
+<path d="M65.4996 481.001C75.545 484.259 83.5589 494.799 86.4674 508.371H68.1461V524H62.4459V508.371H44.5318C47.4402 494.799 55.4545 484.259 65.4996 481.001Z" stroke-width="2" stroke="#D8D8D8" mask="url(#stroke15_1_2)"/>
+</g>
+</g>
+</g>
+<circle id="Ellipse 13_2" cx="65" cy="506" r="36" fill="url(#paint1_linear_1_2)"/>
+</g>
+<g id="shield-button">
+<circle id="Ellipse 11_3" cx="65" cy="624" r="40" fill="black" fill-opacity="0.47"/>
+<circle id="Ellipse 12_3" cx="65" cy="619" r="40" fill="#FFBB56"/>
+<g id="figure_3" opacity="0.7">
+<path id="Ellipse 3_4" d="M88 620C88 632.703 77.7025 643 65 643C52.2975 643 42 632.703 42 620C42 607.297 52.2975 597 65 597C77.7025 597 88 607.297 88 620Z" fill="white" stroke-width="4" stroke="#BB5353"/>
+<g id="Ellipse 4_2">
+<circle cx="65" cy="620" r="12.3134" fill="white"/>
+<circle cx="65" cy="620" r="12.3134" fill="#BB5353"/>
+</g>
+<g id="Ellipse 5_2">
+<circle cx="65" cy="620" r="7.08955" fill="white"/>
+<circle cx="65" cy="620" r="7.08955" fill="white"/>
+</g>
+<g id="Ellipse 6_2">
+<circle cx="65" cy="620" r="4.10448" fill="white"/>
+<circle cx="65" cy="620" r="4.10448" fill="#BB5353"/>
+</g>
+</g>
+<circle id="Ellipse 13_3" cx="65" cy="619" r="36" fill="url(#paint2_linear_1_2)"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_1_2" x1="65" y1="696" x2="65" y2="768" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0.52"/>
+<stop offset="0.445" stop-color="white" stop-opacity="0"/>
+</linearGradient>
+<linearGradient id="paint1_linear_1_2" x1="65" y1="470" x2="65" y2="542" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0.52"/>
+<stop offset="0.445" stop-color="white" stop-opacity="0"/>
+</linearGradient>
+<linearGradient id="paint2_linear_1_2" x1="65" y1="583" x2="65" y2="655" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0.52"/>
+<stop offset="0.445" stop-color="white" stop-opacity="0"/>
+</linearGradient>
+<path id="stroke4_1_2" d="M236.499 499.001C261.17 505.138 280.854 524.993 287.997 550.559H242.999V579.999H228.999V550.559H185C192.143 524.993 211.827 505.138 236.499 499.001Z"/>
+<path id="stroke6_1_2" d="M236.499 499.001C255.422 505.138 270.516 524.993 275.995 550.559H241.484V579.999H230.747V550.559H197.002C202.481 524.993 217.576 505.138 236.499 499.001Z"/>
+<path id="stroke12_1_2" d="M65.4993 481.001C78.5966 484.259 89.0452 494.799 92.8372 508.371H68.9505V524H61.5189V508.371H38.1634C41.9555 494.8 52.4026 484.259 65.4993 481.001Z"/>
+<path id="stroke14_1_2" d="M65.4996 481.001C75.545 484.259 83.5589 494.799 86.4674 508.371H68.1461V524H62.4459V508.371H44.5318C47.4402 494.799 55.4545 484.259 65.4996 481.001Z"/>
+</defs>
+</svg>
+<script>
+(() => {
+  const svg = document.querySelector('svg');
+  const NS = 'http://www.w3.org/2000/svg';
+  const $ = id => document.getElementById(id);
+
+  const door = $('door');
+  const hall = $('hall');
+  const hero = $('hero');
+
+  // Equipment starts hidden.
+  const pairs = { 'shield-button': 'shield', 'tie-button': 'tie', 'helmet-button': 'helmet' };
+  Object.values(pairs).forEach(id => $(id).classList.add('hidden'));
+
+  // Glow outline for the door arch, placed above the castle wall ("Subtract").
+  const glow = document.createElementNS(NS, 'path');
+  glow.id = 'door-glow';
+  glow.setAttribute('d', $('Rectangle 31').getAttribute('d'));
+  $('Subtract').after(glow);
+
+  // Wrap the hero so dragging (wrapper) and bobbing (hero) don't fight over transform.
+  const heroDrag = document.createElementNS(NS, 'g');
+  heroDrag.id = 'hero-drag';
+  hero.before(heroDrag);
+  heroDrag.appendChild(hero);
+
+  // Buttons
+  const clicked = new Set();
+  let doorReady = false;
+  Object.entries(pairs).forEach(([btnId, itemId]) => {
+    $(btnId).addEventListener('click', () => {
+      $(itemId).classList.toggle('hidden');
+      clicked.add(btnId);
+      if (!doorReady && clicked.size === Object.keys(pairs).length) {
+        doorReady = true;
+        door.classList.add('ready');
+        glow.classList.add('on');
+      }
+    });
+  });
+
+  // Door
+  let doorOpen = false;
+  door.addEventListener('click', () => {
+    if (!doorReady || doorOpen) return;
+    doorOpen = true;
+    door.classList.remove('ready');
+    door.classList.add('open');
+    glow.classList.remove('on');
+    Object.keys(pairs).forEach(id => $(id).classList.add('faded'));
+    hall.classList.add('pulse');
+    hero.classList.add('bob');
+    heroDrag.classList.add('draggable');
+  });
+
+  // Hero drag (y-axis only)
+  const body = $('body').getBBox();
+  const hallBox = hall.getBBox();
+  const doorBox = $('Rectangle 31').getBBox();
+  const MIN_Y = -(body.y + body.height - 40); // keep a sliver on screen
+  const MAX_Y = 0;
+  let ty = 0, startY = 0, startTy = 0, dragging = false, entered = false;
+
+  const toSvgY = clientY => {
+    const p = svg.createSVGPoint();
+    p.x = 0; p.y = clientY;
+    return p.matrixTransform(svg.getScreenCTM().inverse()).y;
+  };
+  const setTy = v => { heroDrag.style.transform = `translate(0px, ${v}px)`; };
+
+  heroDrag.addEventListener('pointerdown', e => {
+    if (!doorOpen || entered) return;
+    dragging = true;
+    startY = toSvgY(e.clientY);
+    startTy = ty;
+    heroDrag.setPointerCapture(e.pointerId);
+    heroDrag.classList.add('dragging');
+    e.preventDefault();
+  });
+
+  heroDrag.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    ty = Math.min(MAX_Y, Math.max(MIN_Y, startTy + toSvgY(e.clientY) - startY));
+    setTy(ty);
+    // "Over the hall": the hero's body has risen well into the hall's area.
+    if (body.y + ty < hallBox.y + hallBox.height - hallBox.height * 0.4) enterHall();
+  });
+
+  const endDrag = () => { dragging = false; heroDrag.classList.remove('dragging'); };
+  heroDrag.addEventListener('pointerup', endDrag);
+  heroDrag.addEventListener('pointercancel', endDrag);
+
+  function enterHall() {
+    entered = true;
+    endDrag();
+    hall.classList.remove('pulse');
+    hero.classList.remove('bob');
+    heroDrag.classList.remove('draggable');
+
+    // Scale about the hero's center while moving that center onto the door's center.
+    const cx = body.x + body.width / 2;
+    const cy = body.y + body.height / 2;
+    const dx = (doorBox.x + doorBox.width / 2) - cx;
+    const dy = (doorBox.y + doorBox.height / 2) - cy;
+    heroDrag.style.transformOrigin = `${cx}px ${cy}px`;
+    heroDrag.style.transform = `translate(0px, ${ty}px) scale(1)`;
+    heroDrag.getBoundingClientRect(); // commit start state before transitioning
+    heroDrag.classList.add('enter');
+    heroDrag.style.transform = `translate(${dx}px, ${dy}px) scale(0.5)`;
+  }
+})();
+</script>
+</body>
+</html>
